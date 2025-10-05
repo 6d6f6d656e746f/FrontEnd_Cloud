@@ -2,14 +2,15 @@ version: 1
 frontend:
   phases:
     preBuild:
-      commands: []
+      commands:
+        - npm install
     build:
       commands:
-        - echo "No build - deploying static files from public"
+        - echo "Building for static hosting with external API"
   artifacts:
-    # Amplify will publish the files located in public
     baseDirectory: public
     files:
       - '**/*'
   cache:
-    paths: []
+    paths:
+      - node_modules/**/*
