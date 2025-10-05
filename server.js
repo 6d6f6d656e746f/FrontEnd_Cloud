@@ -4,7 +4,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5173;
-const API_BASE = 'http://lb-prod-proy-134029330.us-east-1.elb.amazonaws.com:3001';
+const API_BASE = 'http://3.95.150.33:3001';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));

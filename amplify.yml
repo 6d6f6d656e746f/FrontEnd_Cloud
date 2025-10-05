@@ -1,0 +1,15 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands: []
+    build:
+      commands:
+        - echo "No build - deploying static files from frontend/public"
+  artifacts:
+    # Amplify will publish the files located in frontend/public
+    baseDirectory: frontend/public
+    files:
+      - '**/*'
+  cache:
+    paths: []
