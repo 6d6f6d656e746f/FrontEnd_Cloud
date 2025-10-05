@@ -2,10 +2,21 @@
   "apiName": "ApiProxy",
   "service": "API Gateway",
   "apiType": "REST",
+  "cors": {
+    "allowCredentials": false,
+    "allowHeaders": ["*"],
+    "allowMethods": ["*"],
+    "allowOrigins": ["*"]
+  },
   "paths": {
     "/api/{proxy+}": {
       "method": "ANY",
-      "lambdaFunction": "ApiProxy"
+      "integration": {
+        "type": "HTTP",
+        "httpMethod": "ANY",
+        "uri": "http://3.86.188.48:3001/api/{proxy}",
+        "passthroughBehavior": "WHEN_NO_MATCH"
+      }
     }
   }
 }
