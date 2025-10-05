@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Movies UI (frontend)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#94a3b8; --accent:#3b82f6; --accent-2:#06b6d4; --glass: rgba(255,255,255,0.04);
+      --maxw:1100px;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: linear-gradient(180deg,#071028 0%, #071b2a 60%); color:#e6eef8; margin:0; padding:32px;}
+    .wrap{max-width:var(--maxw); margin:0 auto;}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{margin:0;font-size:1.6rem;letter-spacing:-0.5px}
+    .sub{color:var(--muted);font-size:0.9rem}
+
+    .controls{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:14px;border-radius:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+    input[type="text"], input[type="number"], textarea, select{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit;padding:8px 10px;border-radius:8px;outline:none;min-width:160px}
+    textarea{min-height:64px}
+    .btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;padding:8px 12px;color:white;border-radius:8px;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .small{padding:6px 8px;font-size:0.9rem}
+
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .main{min-height:240px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px;padding:16px}
+
+    #list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:12px}
+    .movie{background:var(--card);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 6px 18px rgba(2,6,23,0.6);transition:transform .18s ease, box-shadow .18s ease}
+    .movie:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.7)}
+    .movie img{width:96px;height:140px;object-fit:cover;border-radius:6px;flex:0 0 96px}
+    .meta{max-width:calc(100% - 96px);}
+    .meta strong{display:block;font-size:1.02rem}
+    .meta .desc{color:var(--muted);font-size:0.9rem;margin:6px 0}
+    .meta .meta2{color:var(--muted);font-size:0.85rem}
+
+    form.row{display:flex;flex-wrap:wrap;gap:8px}
+    footer{margin-top:18px;color:var(--muted);font-size:0.85rem;text-align:center}
+
+    @media(max-width:880px){ .grid{grid-template-columns:1fr} .movie{flex-direction:row} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Movies</h1>
+        <div class="sub">Consumo simple de los endpoints del microservicio</div>
+      </div>
+    </header>
+
+    <div class="controls card">
+      <input id="search" placeholder="Buscar..." />
+      <button id="doSearch" class="btn small">Buscar</button>
+      <button id="loadFeatured" class="btn small ghost">Destacadas</button>
+      <button id="loadAll" class="btn small ghost">Todas</button>
+      <select id="genres"><option value="">-- Géneros --</option></select>
+    </div>
+
+    <div class="grid">
+      <div class="main">
+        <div class="card">
+          <h2 style="margin-top:0">Películas</h2>
+          <div id="list"></div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card">
+          <h3 style="margin-top:0">Acciones</h3>
+          <h4 style="margin-bottom:6px">Crear género</h4>
+          <div class="row">
+            <input id="newGenreName" placeholder="Nombre" />
+            <input id="newGenreDesc" placeholder="Descripción" />
+            <button id="createGenre" class="btn small">Crear</button>
+          </div>
+
+          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.04);margin:12px 0" />
+
+          <h4 style="margin-bottom:6px">Crear / Editar película</h4>
+          <div class="row">
+            <input id="m_title" placeholder="Título" />
+            <input id="m_director" placeholder="Director" />
+            <input id="m_releaseDate" placeholder="YYYY-MM-DD" />
+            <input id="m_duration" placeholder="Duración" />
+            <input id="m_rating" placeholder="Rating" />
+            <input id="m_genre" placeholder="Géneros (,)" />
+            <input id="m_poster" placeholder="Poster URL" />
+            <input id="m_trailer" placeholder="Trailer URL" />
+            <textarea id="m_description" placeholder="Descripción"></textarea>
+            <button id="createMovie" class="btn">Crear película</button>
+          </div>
+
+          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.04);margin:12px 0" />
+
+          <h4 style="margin-bottom:6px">Editar / Eliminar por ID</h4>
+          <div class="row">
+            <input id="edit_id" placeholder="Movie ID" />
+            <button id="loadById" class="btn small ghost">Cargar</button>
+            <button id="deleteById" class="btn small" style="background:crimson">Eliminar</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Interfaz minimalista para pruebas — proxy en /api</footer>
+  </div>
+
+  <script>
+    async function fetchJson(path) {
+      const res = await fetch(path);
+      return res.json();
+    }
+
+    async function loadGenres() {
+      const j = await fetchJson('/api/genres');
+      const sel = document.getElementById('genres');
+      sel.innerHTML = '<option value="">-- Géneros --</option>';
+      if (j.success && j.data) {
+        j.data.forEach(g => {
+          const o = document.createElement('option');
+          o.value = g.name; o.textContent = g.name;
+          sel.appendChild(o);
+        });
+      }
+    }
+
+    function renderMovies(arr) {
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      if (!arr || arr.length === 0) { list.textContent = 'No hay resultados.'; return; }
+      arr.forEach(m => {
+        const d = document.createElement('div'); d.className = 'movie';
+        const img = document.createElement('img'); img.src = m.posterUrl || 'https://via.placeholder.com/120x180?text=No+poster';
+        const meta = document.createElement('div'); meta.className = 'meta';
+        meta.innerHTML = '<strong>' + (m.title||'Untitled') + '</strong> — ' + (m.director||'') +
+          '<div>' + (m.description||'') + '</div>' +
+          '<div>Rating: ' + (m.rating||0) + ' • Release: ' + (m.releaseDate ? new Date(m.releaseDate).toLocaleDateString() : '') + '</div>';
+        d.appendChild(img); d.appendChild(meta);
+        list.appendChild(d);
+      });
+    }
+
+    async function loadAll() {
+      const q = document.getElementById('genres').value;
+      const url = '/api/movies' + (q ? '?genre=' + encodeURIComponent(q) : '');
+      const j = await fetchJson(url);
+      renderMovies(j.data || []);
+    }
+
+    async function loadFeatured() {
+      const j = await fetchJson('/api/movies/featured');
+      renderMovies(j.data || []);
+    }
+
+    async function doSearch() {
+      const q = document.getElementById('search').value;
+      const url = '/api/movies/search?q=' + encodeURIComponent(q);
+      const j = await fetchJson(url);
+      renderMovies(j.data || []);
+    }
+
+    document.getElementById('doSearch').addEventListener('click', doSearch);
+    document.getElementById('loadFeatured').addEventListener('click', loadFeatured);
+    document.getElementById('loadAll').addEventListener('click', loadAll);
+    document.getElementById('genres').addEventListener('change', loadAll);
+
+    // Create genre
+    document.getElementById('createGenre').addEventListener('click', async () => {
+      const name = document.getElementById('newGenreName').value.trim();
+      const desc = document.getElementById('newGenreDesc').value.trim();
+      if (!name) return alert('Nombre requerido');
+      const res = await fetch('/api/genres', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description: desc })
+      });
+      const j = await res.json();
+      if (j.success) { alert('Género creado'); loadGenres(); } else alert('Error: ' + (j.error||''));    
+    });
+
+    // Create movie
+    document.getElementById('createMovie').addEventListener('click', async () => {
+      const body = {
+        title: document.getElementById('m_title').value,
+        director: document.getElementById('m_director').value,
+        releaseDate: document.getElementById('m_releaseDate').value,
+        duration: parseInt(document.getElementById('m_duration').value) || 0,
+        rating: parseFloat(document.getElementById('m_rating').value) || 0,
+        genre: (document.getElementById('m_genre').value || '').split(',').map(s=>s.trim()).filter(Boolean),
+        posterUrl: document.getElementById('m_poster').value,
+        trailerUrl: document.getElementById('m_trailer').value,
+        description: document.getElementById('m_description').value
+      };
+      const res = await fetch('/api/movies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await res.json();
+      if (j.success) { alert('Película creada'); loadAll(); } else alert('Error: ' + (j.error||JSON.stringify(j)));
+    });
+
+    // Load by ID
+    document.getElementById('loadById').addEventListener('click', async () => {
+      const id = document.getElementById('edit_id').value.trim(); if (!id) return alert('ID requerido');
+      const j = await fetchJson('/api/movies/' + id);
+      if (!j.success) return alert('Error: ' + (j.error||'no success'));
+      // show movie in alert and fill create form for quick edit
+      const m = j.data;
+      alert('Cargado: ' + (m.title||'')); 
+      // populate fields for editing
+      document.getElementById('m_title').value = m.title||'';
+      document.getElementById('m_director').value = m.director||'';
+      document.getElementById('m_releaseDate').value = m.releaseDate ? new Date(m.releaseDate).toISOString().slice(0,10) : '';
+      document.getElementById('m_duration').value = m.duration||'';
+      document.getElementById('m_rating').value = m.rating||'';
+      document.getElementById('m_genre').value = (m.genre || []).join(',');
+      document.getElementById('m_poster').value = m.posterUrl||'';
+      document.getElementById('m_trailer').value = m.trailerUrl||'';
+      document.getElementById('m_description').value = m.description||'';
+      // change create button to 'update'
+      const btn = document.getElementById('createMovie');
+      btn.textContent = 'Actualizar película';
+      btn.onclick = async () => {
+        const body = {
+          title: document.getElementById('m_title').value,
+          director: document.getElementById('m_director').value,
+          releaseDate: document.getElementById('m_releaseDate').value,
+          duration: parseInt(document.getElementById('m_duration').value) || 0,
+          rating: parseFloat(document.getElementById('m_rating').value) || 0,
+          genre: (document.getElementById('m_genre').value || '').split(',').map(s=>s.trim()).filter(Boolean),
+          posterUrl: document.getElementById('m_poster').value,
+          trailerUrl: document.getElementById('m_trailer').value,
+          description: document.getElementById('m_description').value
+        };
+        const res = await fetch('/api/movies/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const r = await res.json();
+        if (r.success) { alert('Actualizada'); loadAll(); btn.textContent = 'Crear película'; btn.onclick = null; } else alert('Error: ' + (r.error||JSON.stringify(r)));
+      };
+    });
+
+    // Delete by ID (soft delete)
+    document.getElementById('deleteById').addEventListener('click', async () => {
+      const id = document.getElementById('edit_id').value.trim(); if (!id) return alert('ID requerido');
+      if (!confirm('Eliminar película ' + id + ' ?')) return;
+      const res = await fetch('/api/movies/' + id, { method: 'DELETE' });
+      const j = await res.json();
+      if (j.success) { alert('Eliminada'); loadAll(); } else alert('Error: ' + (j.error||JSON.stringify(j)));
+    });
+
+    // init
+    loadGenres();
+    loadAll();
+  </script>
+</body>
+</html>
