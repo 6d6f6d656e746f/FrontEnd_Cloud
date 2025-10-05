@@ -1,0 +1,11 @@
+{
+  "apiName": "ApiProxy",
+  "service": "API Gateway",
+  "apiType": "REST",
+  "paths": {
+    "/api/{proxy+}": {
+      "method": "ANY",
+      "lambdaFunction": "ApiProxy"
+    }
+  }
+}
