@@ -5,10 +5,10 @@ frontend:
       commands: []
     build:
       commands:
-        - echo "No build - deploying static files from frontend/public"
+        - echo "No build - deploying static files from public"
   artifacts:
-    # Amplify will publish the files located in frontend/public
-    baseDirectory: frontend/public
+    # Amplify will publish the files located in public
+    baseDirectory: public
     files:
       - '**/*'
   cache:
