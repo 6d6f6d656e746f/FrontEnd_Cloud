@@ -109,41 +109,9 @@
   </div>
 
   <script>
-    const API_BASE = 'http://3.95.150.33:3001';
-    
-    async function apiRequest(path, options = {}) {
-      const url = path.startsWith('/api') ? API_BASE + path : path;
-      const defaultOptions = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors'
-      };
-      
-      const finalOptions = { ...defaultOptions, ...options };
-      
-      try {
-        const res = await fetch(url, finalOptions);
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
-        return await res.json();
-      } catch (error) {
-        console.error('API request error:', error);
-        console.warn('Falling back to direct API call without CORS proxy due to potential issues');
-        
-        // If CORS fails, show user-friendly error
-        return { 
-          success: false, 
-          error: 'Error de conexión: La API no permite solicitudes desde este dominio. Esto es un problema de CORS que debe resolverse en el servidor de la API.' 
-        };
-      }
-    }
-    
     async function fetchJson(path) {
-      return apiRequest(path, { method: 'GET' });
+      const res = await fetch(path);
+      return res.json();
     }
 
     async function loadGenres() {
@@ -204,18 +172,12 @@
       const name = document.getElementById('newGenreName').value.trim();
       const desc = document.getElementById('newGenreDesc').value.trim();
       if (!name) return alert('Nombre requerido');
-      
-      const j = await apiRequest('/api/genres', {
-        method: 'POST',
+      const res = await fetch('/api/genres', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description: desc })
       });
-      
-      if (j.success) { 
-        alert('Género creado'); 
-        loadGenres(); 
-      } else { 
-        alert('Error: ' + (j.error || 'Error desconocido')); 
-      }
+      const j = await res.json();
+      if (j.success) { alert('Género creado'); loadGenres(); } else alert('Error: ' + (j.error||''));    
     });
 
     // Create movie
@@ -231,18 +193,9 @@
         trailerUrl: document.getElementById('m_trailer').value,
         description: document.getElementById('m_description').value
       };
-      
-      const j = await apiRequest('/api/movies', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
-      
-      if (j.success) { 
-        alert('Película creada'); 
-        loadAll(); 
-      } else { 
-        alert('Error: ' + (j.error || JSON.stringify(j))); 
-      }
+      const res = await fetch('/api/movies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await res.json();
+      if (j.success) { alert('Película creada'); loadAll(); } else alert('Error: ' + (j.error||JSON.stringify(j)));
     });
 
     // Load by ID
@@ -278,27 +231,19 @@
           trailerUrl: document.getElementById('m_trailer').value,
           description: document.getElementById('m_description').value
         };
-        const r = await apiRequest('/api/movies/' + id, {
-          method: 'PUT',
-          body: JSON.stringify(body)
-        });
+        const res = await fetch('/api/movies/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const r = await res.json();
         if (r.success) { alert('Actualizada'); loadAll(); btn.textContent = 'Crear película'; btn.onclick = null; } else alert('Error: ' + (r.error||JSON.stringify(r)));
       };
     });
 
     // Delete by ID (soft delete)
     document.getElementById('deleteById').addEventListener('click', async () => {
-      const id = document.getElementById('edit_id').value.trim(); 
-      if (!id) return alert('ID requerido');
+      const id = document.getElementById('edit_id').value.trim(); if (!id) return alert('ID requerido');
       if (!confirm('Eliminar película ' + id + ' ?')) return;
-      
-      const j = await apiRequest('/api/movies/' + id, { method: 'DELETE' });
-      if (j.success) { 
-        alert('Eliminada'); 
-        loadAll(); 
-      } else { 
-        alert('Error: ' + (j.error || JSON.stringify(j))); 
-      }
+      const res = await fetch('/api/movies/' + id, { method: 'DELETE' });
+      const j = await res.json();
+      if (j.success) { alert('Eliminada'); loadAll(); } else alert('Error: ' + (j.error||JSON.stringify(j)));
     });
 
     // init
